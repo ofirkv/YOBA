@@ -2,12 +2,12 @@ import cv2
 import mediapipe as mp
 import numpy as np
 
-# אתחול MediaPipe Pose
+# Initialize MediaPipe Pose
 mp_pose = mp.solutions.pose
 pose = mp_pose.Pose()
 mp_drawing = mp.solutions.drawing_utils
 
-# פונקציה לחישוב זווית בין שלוש נקודות
+# Function to calculate angle between three points
 def calculate_angle(a, b, c):
     a = np.array(a)
     b = np.array(b)
@@ -20,7 +20,7 @@ def calculate_angle(a, b, c):
     angle = np.arccos(cosine_angle)
     return np.degrees(angle)
 
-# פונקציה לזיהוי תנוחת עץ
+# Tree position detection function
 def detect_tree_pose(landmarks):
     left_knee_angle = calculate_angle(
         (landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].x, landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].y),
@@ -31,9 +31,9 @@ def detect_tree_pose(landmarks):
     hands_above_head = landmarks[mp_pose.PoseLandmark.LEFT_WRIST.value].y < landmarks[mp_pose.PoseLandmark.NOSE.value].y and \
                        landmarks[mp_pose.PoseLandmark.RIGHT_WRIST.value].y < landmarks[mp_pose.PoseLandmark.NOSE.value].y
 
-    return left_knee_angle > 100 and hands_above_head  # תנאי לזיהוי תנוחת עץ
+    return left_knee_angle > 100 and hands_above_head  # Conditions for identifying a tree position
 
-# פונקציה לזיהוי תנוחת פלאנק
+# Plank pose detection function
 def detect_plank_pose(landmarks):
     shoulder = landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value]
     hip = landmarks[mp_pose.PoseLandmark.LEFT_HIP.value]
@@ -41,9 +41,9 @@ def detect_plank_pose(landmarks):
 
     body_angle = calculate_angle((shoulder.x, shoulder.y), (hip.x, hip.y), (ankle.x, ankle.y))
 
-    return 160 < body_angle < 180  # גוף בקו ישר
+    return 160 < body_angle < 180  # Body in a straight line
 
-# פונקציה לזיהוי תנוחת סירה
+# Boat position detection function
 def detect_boat_pose(landmarks):
     left_knee = landmarks[mp_pose.PoseLandmark.LEFT_KNEE.value]
     left_hip = landmarks[mp_pose.PoseLandmark.LEFT_HIP.value]
@@ -53,9 +53,9 @@ def detect_boat_pose(landmarks):
 
     hands_up = landmarks[mp_pose.PoseLandmark.LEFT_WRIST.value].y < landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].y
 
-    return 130 < knee_angle < 160 and hands_up  # רגליים בזווית בינונית וידיים מורמות
+    return 130 < knee_angle < 160 and hands_up  # Legs at a medium angle and arms raised
 
-# פונקציה לזיהוי תנוחת משולש
+# Triangle position detection function
 def detect_triangle_pose(landmarks):
     left_shoulder = landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value]
     left_hip = landmarks[mp_pose.PoseLandmark.LEFT_HIP.value]
@@ -65,9 +65,9 @@ def detect_triangle_pose(landmarks):
 
     one_hand_up = landmarks[mp_pose.PoseLandmark.LEFT_WRIST.value].y < landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].y
 
-    return 50 < upper_body_angle < 80 and one_hand_up  # גוף נוטה הצידה
+    return 50 < upper_body_angle < 80 and one_hand_up  # Body leaning sideways
 
-# פונקציה לזיהוי תנוחת עמידה (Tadasana)
+# Standing pose detection function (Tadasana)
 def detect_standing_pose(landmarks):
     left_shoulder = landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value]
     left_hip = landmarks[mp_pose.PoseLandmark.LEFT_HIP.value]
@@ -79,9 +79,9 @@ def detect_standing_pose(landmarks):
     hands_at_sides = abs(landmarks[mp_pose.PoseLandmark.LEFT_WRIST.value].y - landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].y) < 0.1 and \
                      abs(landmarks[mp_pose.PoseLandmark.RIGHT_WRIST.value].y - landmarks[mp_pose.PoseLandmark.RIGHT_HIP.value].y) < 0.1
 
-    return 170 < body_angle < 180 and feet_together and hands_at_sides  # תנוחה יציבה עם רגליים צמודות וידיים לצידי הגוף
+    return 170 < body_angle < 180 and feet_together and hands_at_sides  # Stable posture with legs together and hands at the sides of the body
 
-# פונקציה ראשית להרצת זיהוי התנוחות
+# Main function to run pose detection
 def main():
     cap = cv2.VideoCapture(0)
 
